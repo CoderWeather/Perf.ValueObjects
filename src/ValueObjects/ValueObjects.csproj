@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AssemblyName>Perf.ValueObjects</AssemblyName>
+        <RootNamespace>$(AssemblyName)</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Perf.ValueObjects</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Ilya Pogodin</Authors>
+        <Description>Simple generator for type per value unique id types</Description>
+        <RepositoryUrl>https://github.com/CoderWeather/Perf.ValueObjects</RepositoryUrl>
+        <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+        <PackageTags>DDD valueobject c# perf sourcegen</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../LICENSE" Pack="true" PackagePath="" Visible="false" />
+    </ItemGroup>
+
+</Project>
