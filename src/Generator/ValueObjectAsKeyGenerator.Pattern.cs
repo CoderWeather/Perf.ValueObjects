@@ -23,8 +23,9 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 			return;
 		}
 
+		var toStringCall = singleKey.Symbol.Name is not "String" ? ".ToString()" : null;
 		writer.WriteLine(
-			$"public override string ToString() => this.{singleKey.Symbol.Name}.ToString();"
+			$"public override string ToString() => this.{singleKey.Symbol.Name}{toStringCall};"
 		);
 	}
 

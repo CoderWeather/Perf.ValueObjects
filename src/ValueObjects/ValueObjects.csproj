@@ -10,10 +10,10 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Perf.ValueObjects</PackageId>
+        <PackageId>PerfValueObjects</PackageId>
         <Version>1.0.0</Version>
         <Authors>Ilya Pogodin</Authors>
-        <Description>Simple generator for type per value unique id types</Description>
+        <Description>Simple source generator for type per value unique id types</Description>
         <RepositoryUrl>https://github.com/CoderWeather/Perf.ValueObjects</RepositoryUrl>
         <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
         <PackageTags>DDD valueobject c# perf sourcegen</PackageTags>
