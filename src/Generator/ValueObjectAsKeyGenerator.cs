@@ -215,7 +215,9 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 		   .SelectMany(x => x.Members
 			   .Select(y => y.OriginalType.ContainingNamespace)
 			   .Where(y => y.ToString() != containingNamespace && y.IsGlobalNamespace is false)
-			);
+			   .Select(y => y.ToString())
+			)
+		   .Distinct();
 
 		foreach (var ns in nsToImport) {
 			writer.WriteLine($"using {ns};");
