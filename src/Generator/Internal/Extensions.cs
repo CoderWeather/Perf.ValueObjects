@@ -7,4 +7,8 @@ internal static class Extensions {
 		foreach (var s in strings)
 			writer.WriteLine(s);
 	}
+
+	public static HashSet<T> ToHashSet<T>(this IEnumerable<T> enumerable) {
+		return new(enumerable);
+	}
 }

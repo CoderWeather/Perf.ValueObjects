@@ -1,5 +1,4 @@
 ﻿using System.CodeDom.Compiler;
-using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -154,13 +153,16 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 			}
 		}
 
-		foreach (var (k, v) in typesToProcess.ToArray()) {
+		foreach (var pair in typesToProcess.ToArray()) {
+			var k = pair.Key;
+			var v = pair.Value;
 			if (v.Members.Any() is false) {
 				typesToProcess.Remove(k);
 			}
 		}
 
-		foreach (var (_, v) in typesToProcess) {
+		foreach (var pair in typesToProcess) {
+			var v = pair.Value;
 			if (v.Members.Any(x => x.IsKey) is false) {
 				v.Members.ForEach(x => x.IsKey = true);
 			}

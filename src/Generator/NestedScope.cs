@@ -97,7 +97,7 @@ internal sealed class NestedClassScope : IDisposable {
 			visibilityModifier,
 			refModifier,
 			TypeKindToStr(type),
-			fullName[(fullName.LastIndexOf('.') + 1)..]
+			fullName.Substring((fullName.LastIndexOf('.') + 1))
 		);
 		return str;
 	}
