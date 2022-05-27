@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -122,8 +123,11 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 			var members = symbol.GetMembers();
 			var fields = members.OfType<IFieldSymbol>()
 			   .Where(x => x.Name.EndsWith("BackingField") is false)
+			   .Where(x => x is { IsConst: false, IsStatic: false })
 			   .ToArray();
-			var props = members.OfType<IPropertySymbol>().ToArray();
+			var props = members.OfType<IPropertySymbol>()
+			   .Where(x => x is { IsStatic: false })
+			   .ToArray();
 
 			if (voAttr is null
 			 || symbol.IsRefLikeType
