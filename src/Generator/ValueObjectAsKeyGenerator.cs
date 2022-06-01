@@ -30,6 +30,7 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 		public INamedTypeSymbol Symbol { get; }
 		public List<BaseMemberPack> Members { get; } = new();
 		public bool HaveConstructorWithKey { get; set; }
+		public bool ImplementsValidatable { get; set; }
 
 		public TypePack(INamedTypeSymbol type) => Symbol = type;
 	}
@@ -101,6 +102,8 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 			"Perf.ValueObjects.Attributes.ValueObjectAsKey");
 		var keyAttribute = compilation.GetTypeByMetadataName(
 			"Perf.ValueObjects.Attributes.ValueObjectAsKey+Key");
+		var validatableInterface = compilation.GetTypeByMetadataName(
+			"Perf.ValueObjects.IValidatableValueObject");
 
 		if (typeAttribute is null || keyAttribute is null) {
 			return;
@@ -155,6 +158,9 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 					IsKey = keyAttr is not null
 				});
 			}
+
+			pack.ImplementsValidatable = symbol.Interfaces
+			   .Any(x => x.OriginalDefinition.Equals(validatableInterface, SymbolEqualityComparer.Default));
 		}
 
 		foreach (var pair in typesToProcess.ToArray()) {

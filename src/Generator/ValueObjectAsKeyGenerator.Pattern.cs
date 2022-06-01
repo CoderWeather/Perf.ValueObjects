@@ -34,11 +34,21 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 
 		writer.WriteLine($"public static implicit operator {key.Type.Name}({type.Symbol.Name} vo)");
 		using (NestedScope.Start(writer)) {
-			writer.WriteLine($"if (vo.{key.Symbol.Name} == default)");
-			using (NestedScope.Start(writer)) {
-				writer.WriteLine(
-					$"throw new ValueObjectAsKeyException(\"Cannot cast {type.Symbol.Name} to {key.Type.Name} when {type.Symbol.Name}.{key.Symbol.Name} == default\");"
-				);
+			if (type.ImplementsValidatable) {
+				writer.WriteLine("if (vo.IsValid() is false)");
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						"throw ValueObjectValidationException.CreateFor(vo);"
+					);
+				}
+			}
+			else {
+				writer.WriteLine($"if (vo.{key.Symbol.Name} == default)");
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						$"throw new ValueObjectAsKeyException(\"Cannot cast {type.Symbol.Name} to {key.Type.Name} when {type.Symbol.Name}.{key.Symbol.Name} == default\");"
+					);
+				}
 			}
 
 			writer.WriteLine();
@@ -47,15 +57,29 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 
 		writer.WriteLine($"public static implicit operator {type.Symbol.Name}({key.Type.Name} key)");
 		using (NestedScope.Start(writer)) {
-			writer.WriteLine("if (key == default)");
-			using (NestedScope.Start(writer)) {
-				writer.WriteLine(
-					$"throw new ValueObjectAsKeyException(\"Cannot cast {key.Type.Name} to {type.Symbol.Name} when {key.Type.Name} {key.Symbol.Name} key equals default\");"
-				);
-			}
+			if (type.ImplementsValidatable) {
+				writer.WriteLine($"{type.Symbol.Name} vo = new(key);");
+				writer.WriteLine("if (vo.IsValid() is false)");
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						"throw ValueObjectValidationException.CreateFor(vo);"
+					);
+				}
 
-			writer.WriteLine();
-			writer.WriteLine("return new(key);");
+				writer.WriteLine();
+				writer.WriteLine("return vo;");
+			}
+			else {
+				writer.WriteLine("if (key == default)");
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						$"throw new ValueObjectAsKeyException(\"Cannot cast {key.Type.Name} to {type.Symbol.Name} when {key.Type.Name} {key.Symbol.Name} key equals default\");"
+					);
+				}
+
+				writer.WriteLine();
+				writer.WriteLine("return new(key);");
+			}
 		}
 	}
 
@@ -66,13 +90,23 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 		var castToType = $"({string.Join(", ", keyMembers.Select(x => x.Type.Name))})";
 		writer.WriteLine($"public static implicit operator {castToType}({type.Symbol.Name} vo)");
 		using (NestedScope.Start(writer)) {
-			writer.WriteLine(
-				$"if ({string.Join(" || ", keyMembers.Select(x => $"vo.{x.Symbol.Name} == default"))})"
-			);
-			using (NestedScope.Start(writer)) {
+			if (type.ImplementsValidatable) {
+				writer.WriteLine("if (vo.IsValid() is false)");
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						"throw ValueObjectValidationException.CreateFor(vo);"
+					);
+				}
+			}
+			else {
 				writer.WriteLine(
-					$"throw new ValueObjectAsKeyException(\"Cannot cast {type.Symbol.Name} to {castToType} when any of key members equals default\");"
+					$"if ({string.Join(" || ", keyMembers.Select(x => $"vo.{x.Symbol.Name} == default"))})"
 				);
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						$"throw new ValueObjectAsKeyException(\"Cannot cast {type.Symbol.Name} to {castToType} when any of key members equals default\");"
+					);
+				}
 			}
 
 			writer.WriteLine();
@@ -86,19 +120,33 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 			var tupleItems = Enumerable.Range(0, keyMembers.Length)
 			   .Select(i => $"key.Item{i}")
 			   .ToArray();
-			writer.WriteLine(
-				$"if ({string.Join(" || ", tupleItems.Select(x => $"{x} == default"))})"
-			);
-			using (NestedScope.Start(writer)) {
+			if (type.ImplementsValidatable) {
+				writer.WriteLine($"{type.Symbol.Name} vo = new({string.Join(", ", tupleItems)});");
+
+				writer.WriteLine("if (vo.IsValid() is false)");
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						"throw ValueObjectValidationException.CreateFor(vo);"
+					);
+				}
+
+				writer.WriteLine("return vo;");
+			}
+			else {
 				writer.WriteLine(
-					$"throw new ValueObjectAsKeyException(\"Cannot cast {castToType} to {type.Symbol.Name} when any of tuple elements equals default\");"
+					$"if ({string.Join(" || ", tupleItems.Select(x => $"{x} == default"))})"
+				);
+				using (NestedScope.Start(writer)) {
+					writer.WriteLine(
+						$"throw new ValueObjectAsKeyException(\"Cannot cast {castToType} to {type.Symbol.Name} when any of tuple elements equals default\");"
+					);
+				}
+
+				writer.WriteLine();
+				writer.WriteLine(
+					$"return new({string.Join(", ", tupleItems)});"
 				);
 			}
-
-			writer.WriteLine();
-			writer.WriteLine(
-				$"return new({string.Join(", ", tupleItems)});"
-			);
 		}
 	}
 }
