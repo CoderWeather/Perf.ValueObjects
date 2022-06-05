@@ -2,8 +2,22 @@ using System.CodeDom.Compiler;
 
 namespace Perf.ValueObjects.Generator;
 
-internal sealed partial class ValueObjectGenerator {
-	public static void WriteDeconstruct(IndentedTextWriter writer, TypePack type) {
+public sealed partial class ValueObjectGenerator {
+	private static void WriteConstructorForKeys(IndentedTextWriter writer, TypePack type) {
+		var keys = type.Members
+		   .Where(m => m.IsKey)
+		   .ToArray();
+		writer.WriteLine(
+			$"public {type.Symbol.Name}({string.Join(", ", keys.Select(k => $"{k.Type} {k.Symbol.Name}"))})"
+		);
+		using (NestedScope.Start(writer)) {
+			foreach (var m in keys) {
+				writer.WriteLine($"this.{m.Symbol.Name} = {m.Symbol.Name};");
+			}
+		}
+	}
+
+	private static void WriteDeconstruct(IndentedTextWriter writer, TypePack type) {
 		var keyMembers = type.Members.Where(x => x.IsKey).ToArray();
 		writer.WriteLine(
 			$"public void Deconstruct({string.Join(", ", keyMembers.Select(x => $"out {x.Type.Name} {x.Symbol.Name.ToLowerInvariant()}"))})"
@@ -17,7 +31,7 @@ internal sealed partial class ValueObjectGenerator {
 		}
 	}
 
-	public static void WriteToString(IndentedTextWriter writer, TypePack type) {
+	private static void WriteToString(IndentedTextWriter writer, TypePack type) {
 		var singleKey = type.Members.SingleOrDefault(x => x.IsKey);
 		if (singleKey is null) {
 			return;
@@ -29,7 +43,7 @@ internal sealed partial class ValueObjectGenerator {
 		);
 	}
 
-	public static void WriteCastSingleKeyMethods(IndentedTextWriter writer, TypePack type) {
+	private static void WriteCastSingleKeyMethods(IndentedTextWriter writer, TypePack type) {
 		var key = type.Members.Single(x => x.IsKey);
 
 		writer.WriteLine($"public static implicit operator {key.Type.Name}({type.Symbol.Name} vo)");
@@ -83,7 +97,7 @@ internal sealed partial class ValueObjectGenerator {
 		}
 	}
 
-	public static void WriteCastComplexKeyMethods(IndentedTextWriter writer, TypePack type) {
+	private static void WriteCastComplexKeyMethods(IndentedTextWriter writer, TypePack type) {
 		var keyMembers = type.Members
 		   .Where(x => x.IsKey)
 		   .ToArray();
@@ -117,7 +131,7 @@ internal sealed partial class ValueObjectGenerator {
 
 		writer.WriteLine($"public static implicit operator {type.Symbol.Name}({castToType} key)");
 		using (NestedScope.Start(writer)) {
-			var tupleItems = Enumerable.Range(0, keyMembers.Length)
+			var tupleItems = Enumerable.Range(1, keyMembers.Length)
 			   .Select(i => $"key.Item{i}")
 			   .ToArray();
 			if (type.ImplementsValidatable) {
