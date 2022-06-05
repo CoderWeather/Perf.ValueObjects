@@ -2,7 +2,7 @@ using System.CodeDom.Compiler;
 
 namespace Perf.ValueObjects.Generator;
 
-internal sealed partial class ValueObjectAsKeyGenerator {
+internal sealed partial class ValueObjectGenerator {
 	public static void WriteDeconstruct(IndentedTextWriter writer, TypePack type) {
 		var keyMembers = type.Members.Where(x => x.IsKey).ToArray();
 		writer.WriteLine(
@@ -46,7 +46,7 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 				writer.WriteLine($"if (vo.{key.Symbol.Name} == default)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectAsKeyException(\"Cannot cast {type.Symbol.Name} to {key.Type.Name} when {type.Symbol.Name}.{key.Symbol.Name} == default\");"
+						$"throw new ValueObjectException(\"Cannot cast '{type.Symbol.Name}' to '{key.Type.Name}' when '{type.Symbol.Name}.{key.Symbol.Name}' equals default\");"
 					);
 				}
 			}
@@ -73,7 +73,7 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 				writer.WriteLine("if (key == default)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectAsKeyException(\"Cannot cast {key.Type.Name} to {type.Symbol.Name} when {key.Type.Name} {key.Symbol.Name} key equals default\");"
+						$"throw new ValueObjectException(\"Cannot cast '{key.Type.Name}' to '{type.Symbol.Name}' when '{key.Type.Name}' '{key.Symbol.Name}' key equals default\");"
 					);
 				}
 
@@ -104,7 +104,7 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 				);
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectAsKeyException(\"Cannot cast {type.Symbol.Name} to {castToType} when any of key members equals default\");"
+						$"throw new ValueObjectException(\"Cannot cast '{type.Symbol.Name}' to '{castToType}' when any of key members equals default\");"
 					);
 				}
 			}
@@ -138,7 +138,7 @@ internal sealed partial class ValueObjectAsKeyGenerator {
 				);
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectAsKeyException(\"Cannot cast {castToType} to {type.Symbol.Name} when any of tuple elements equals default\");"
+						$"throw new ValueObjectException(\"Cannot cast '{castToType}' to '{type.Symbol.Name}' when any of tuple elements equals default\");"
 					);
 				}
 

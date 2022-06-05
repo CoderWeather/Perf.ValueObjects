@@ -10,7 +10,7 @@ using Perf.ValueObjects.Generator.Internal;
 namespace Perf.ValueObjects.Generator;
 
 [Generator]
-internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
+internal sealed partial class ValueObjectGenerator : ISourceGenerator {
 	private sealed class SyntaxReceiver : ISyntaxReceiver {
 		public readonly List<TypeDeclarationSyntax> Types = new();
 
@@ -80,7 +80,7 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 			ExecuteInternal(context);
 		}
 		catch (Exception e) {
-			var descriptor = new DiagnosticDescriptor(nameof(ValueObjectAsKeyGenerator),
+			var descriptor = new DiagnosticDescriptor(nameof(ValueObjectGenerator),
 				"Error",
 				e.ToString(),
 				"Error",
@@ -99,9 +99,9 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 		var compilation = context.Compilation;
 
 		var typeAttribute = compilation.GetTypeByMetadataName(
-			"Perf.ValueObjects.Attributes.ValueObjectAsKey");
+			"Perf.ValueObjects.Attributes.ValueObject");
 		var keyAttribute = compilation.GetTypeByMetadataName(
-			"Perf.ValueObjects.Attributes.ValueObjectAsKey+Key");
+			"Perf.ValueObjects.Attributes.ValueObject+Key");
 		var validatableInterface = compilation.GetTypeByMetadataName(
 			"Perf.ValueObjects.IValidatableValueObject");
 
@@ -169,13 +169,15 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 			if (v.Members.Any() is false) {
 				typesToProcess.Remove(k);
 			}
+			else if (v.Members.Any(x => x.IsKey) is false) {
+				foreach (var m in v.Members) {
+					m.IsKey = true;
+				}
+			}
 		}
 
 		foreach (var pair in typesToProcess) {
 			var v = pair.Value;
-			if (v.Members.Any(x => x.IsKey) is false) {
-				v.Members.ForEach(x => x.IsKey = true);
-			}
 
 			var typeConstructors = v.Symbol.InstanceConstructors;
 			var possibleKeyConstructor = typeConstructors
@@ -241,11 +243,11 @@ internal sealed partial class ValueObjectAsKeyGenerator : ISourceGenerator {
 
 		foreach (var type in types) {
 			using (NestedClassScope.Start(writer, type.Symbol)) {
-				if (type.Members.Count(x => x.IsKey) > 1) {
-					WriteCastComplexKeyMethods(writer, type);
+				if (type.Members.Count(x => x.IsKey) is 1) {
+					WriteCastSingleKeyMethods(writer, type);
 				}
 				else {
-					WriteCastSingleKeyMethods(writer, type);
+					WriteCastComplexKeyMethods(writer, type);
 				}
 
 				WriteDeconstruct(writer, type);

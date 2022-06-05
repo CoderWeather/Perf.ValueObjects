@@ -1,7 +1,7 @@
 ﻿namespace Perf.ValueObjects;
 
-public sealed class ValueObjectAsKeyException : Exception {
-	public ValueObjectAsKeyException(string message) : base(message) { }
+public sealed class ValueObjectException : Exception {
+	public ValueObjectException(string message) : base(message) { }
 }
 
 public sealed class ValueObjectValidationException<TValueObject> : Exception {
