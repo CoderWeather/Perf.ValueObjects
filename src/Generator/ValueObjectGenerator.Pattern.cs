@@ -1,4 +1,5 @@
 using System.CodeDom.Compiler;
+using Perf.ValueObjects.Generator.Internal;
 
 namespace Perf.ValueObjects.Generator;
 
@@ -95,6 +96,17 @@ public sealed partial class ValueObjectGenerator {
 				writer.WriteLine("return new(key);");
 			}
 		}
+	}
+
+	private static void WriteEqualityOperators(IndentedTextWriter writer, TypePack type) {
+		var key = type.Members.Single(x => x.IsKey);
+		writer.WriteLines(
+			$"public override int GetHashCode() => {key.Symbol.Name}.GetHashCode();",
+			$"public static bool operator ==({type.Symbol.QualifiedName()} left, {key.OriginalType.QualifiedName()} right) => left.{key.Symbol.Name} == right;",
+			$"public static bool operator !=({type.Symbol.QualifiedName()} left, {key.OriginalType.QualifiedName()} right) => left.{key.Symbol.Name} != right;",
+			$"public static bool operator ==({key.OriginalType.QualifiedName()} left, {type.Symbol.QualifiedName()} right) => left == right.{key.Symbol.Name};",
+			$"public static bool operator !=({key.OriginalType.QualifiedName()} left, {type.Symbol.QualifiedName()} right) => left != right.{key.Symbol.Name};"
+		);
 	}
 
 	private static void WriteCastComplexKeyMethods(IndentedTextWriter writer, TypePack type) {

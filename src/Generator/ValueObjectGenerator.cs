@@ -239,6 +239,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 				if (type.Members.Count(x => x.IsKey) is 1) {
 					WriteCastSingleKeyMethods(writer, type);
 					WriteToString(writer, type);
+					WriteEqualityOperators(writer, type);
 				}
 				else {
 					WriteCastComplexKeyMethods(writer, type);
