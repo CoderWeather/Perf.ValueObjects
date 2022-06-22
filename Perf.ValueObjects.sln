@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_globals", "_globals", "{8F
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 		README.md = README.md
+		nuget-pack.sh = nuget-pack.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console", "tests\Console\Console.csproj", "{CED5328C-CF3C-44C4-BD25-EE8A7A4DD079}"
