@@ -39,8 +39,9 @@ public sealed partial class ValueObjectGenerator {
 		}
 
 		var toStringCall = singleKey.Symbol.Name is not "String" ? ".ToString()" : null;
-		writer.WriteLine(
-			$"public override string ToString() => this.{singleKey.Symbol.Name}{toStringCall};"
+		writer.WriteLines(
+			$"public override string ToString() => this.{singleKey.Symbol.Name}{toStringCall};",
+			$"public override int GetHashCode() => {singleKey.Symbol.Name}.GetHashCode();"
 		);
 	}
 
@@ -101,7 +102,6 @@ public sealed partial class ValueObjectGenerator {
 	private static void WriteEqualityOperators(IndentedTextWriter writer, TypePack type) {
 		var key = type.Members.Single(x => x.IsKey);
 		writer.WriteLines(
-			$"public override int GetHashCode() => {key.Symbol.Name}.GetHashCode();",
 			$"public static bool operator ==({type.Symbol.QualifiedName()} left, {key.OriginalType.QualifiedName()} right) => left.{key.Symbol.Name} == right;",
 			$"public static bool operator !=({type.Symbol.QualifiedName()} left, {key.OriginalType.QualifiedName()} right) => left.{key.Symbol.Name} != right;",
 			$"public static bool operator ==({key.OriginalType.QualifiedName()} left, {type.Symbol.QualifiedName()} right) => left == right.{key.Symbol.Name};",

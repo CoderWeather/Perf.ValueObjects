@@ -13,8 +13,9 @@ internal sealed class NestedScope : IDisposable {
 	private bool shouldCloseOnDispose = true;
 
 	public void Dispose() {
-		if (shouldCloseOnDispose)
+		if (shouldCloseOnDispose) {
 			Close();
+		}
 
 		Stack.Pop();
 	}
@@ -97,7 +98,7 @@ internal sealed class NestedClassScope : IDisposable {
 			visibilityModifier,
 			refModifier,
 			TypeKindToStr(type),
-			fullName.Substring((fullName.LastIndexOf('.') + 1))
+			fullName.Substring(fullName.LastIndexOf('.') + 1)
 		);
 		return str;
 	}

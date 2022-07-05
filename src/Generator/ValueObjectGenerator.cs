@@ -73,9 +73,13 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 			return null;
 		}
 
-		if (symbol.TryGetAttribute(valueObjectAttributeType) is null) {
+		if (symbol.TryGetAttribute(valueObjectAttributeType) is not { } attributeData) {
 			return null;
 		}
+
+		var addEqualityOperators = attributeData.NamedArguments
+		   .FirstOrDefault(x => x.Key is "AddEqualityOperators")
+		   .Value.Value is true;
 
 		var fields = symbol.GetMembers()
 		   .OfType<IFieldSymbol>()
@@ -105,7 +109,9 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 			return null;
 		}
 
-		var pack = new TypePack(symbol);
+		var pack = new TypePack(symbol) {
+			AddEqualityOperators = addEqualityOperators
+		};
 		pack.Members.AddRange(fields);
 		pack.Members.AddRange(properties);
 
@@ -172,8 +178,11 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 		public List<BaseMemberPack> Members { get; } = new();
 		public bool HaveConstructorWithKey { get; set; }
 		public bool ImplementsValidatable { get; set; }
+		public bool AddEqualityOperators { get; set; }
 
-		public TypePack(INamedTypeSymbol type) => Symbol = type;
+		public TypePack(INamedTypeSymbol type) {
+			Symbol = type;
+		}
 	}
 
 	internal abstract class BaseMemberPack {
@@ -239,7 +248,9 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 				if (type.Members.Count(x => x.IsKey) is 1) {
 					WriteCastSingleKeyMethods(writer, type);
 					WriteToString(writer, type);
-					WriteEqualityOperators(writer, type);
+					if (type.AddEqualityOperators) {
+						WriteEqualityOperators(writer, type);
+					}
 				}
 				else {
 					WriteCastComplexKeyMethods(writer, type);
@@ -247,6 +258,22 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 
 				if (type.HaveConstructorWithKey is false) {
 					WriteConstructorForKeys(writer, type);
+				}
+			}
+		}
+
+		var forExtensions = types
+		   .Where(x => x.Members.Count(y => y.IsKey) is 1)
+		   .ToArray();
+
+		if (forExtensions.Any()) {
+			writer.WriteLine("public static class __ValueObjectsExtensions");
+			using (NestedScope.Start(writer)) {
+				foreach (var t in forExtensions) {
+					var key = t.Members.Single(x => x.IsKey);
+					writer.WriteLine(
+						$"{t.Symbol.DeclaredAccessibility.ToString().ToLower()} static {t.Symbol.QualifiedName()} As{t.Symbol.Name}(this {key.Type.QualifiedName()} key) => key;"
+					);
 				}
 			}
 		}
