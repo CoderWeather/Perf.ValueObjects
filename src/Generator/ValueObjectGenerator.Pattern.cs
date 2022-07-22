@@ -71,7 +71,7 @@ public sealed partial class ValueObjectGenerator {
 			writer.WriteLine($"return vo.{key.Symbol.Name};");
 		}
 
-		writer.WriteLine($"public static implicit operator {type.Symbol.Name}({key.Type.Name} key)");
+		writer.WriteLine($"public static explicit operator {type.Symbol.Name}({key.Type.Name} key)");
 		using (NestedScope.Start(writer)) {
 			if (type.ImplementsValidatable) {
 				writer.WriteLine($"{type.Symbol.Name} vo = new(key);");
@@ -141,7 +141,7 @@ public sealed partial class ValueObjectGenerator {
 			);
 		}
 
-		writer.WriteLine($"public static implicit operator {type.Symbol.Name}({castToType} key)");
+		writer.WriteLine($"public static explicit operator {type.Symbol.Name}({castToType} key)");
 		using (NestedScope.Start(writer)) {
 			var tupleItems = Enumerable.Range(1, keyMembers.Length)
 			   .Select(i => $"key.Item{i}")

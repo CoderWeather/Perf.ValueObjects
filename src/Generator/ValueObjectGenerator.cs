@@ -81,6 +81,10 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 		   .FirstOrDefault(x => x.Key is "AddEqualityOperators")
 		   .Value.Value is true;
 
+		var addExtensionMethod = attributeData.NamedArguments
+		   .FirstOrDefault(x => x.Key is "AddExtensionMethod")
+		   .Value.Value is true;
+
 		var fields = symbol.GetMembers()
 		   .OfType<IFieldSymbol>()
 		   .Where(f => f is {
@@ -110,7 +114,8 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 		}
 
 		var pack = new TypePack(symbol) {
-			AddEqualityOperators = addEqualityOperators
+			AddEqualityOperators = addEqualityOperators,
+			AddExtensionMethod = addExtensionMethod
 		};
 		pack.Members.AddRange(fields);
 		pack.Members.AddRange(properties);
@@ -134,8 +139,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 			 && pack.Members.SingleOrDefault(x => x.IsKey) is { } singleKey) {
 				pack.HaveConstructorWithKey = singleKey.Type.Name
 				 == possibleKeyConstructor.Parameters[0].Type.Name;
-			}
-			else {
+			} else {
 				var typeKeyTypeNames = pack.Members
 				   .Select(x => x.Type.Name)
 				   .ToHashSet();
@@ -179,6 +183,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 		public bool HaveConstructorWithKey { get; set; }
 		public bool ImplementsValidatable { get; set; }
 		public bool AddEqualityOperators { get; set; }
+		public bool AddExtensionMethod { get; set; }
 
 		public TypePack(INamedTypeSymbol type) {
 			Symbol = type;
@@ -251,8 +256,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 					if (type.AddEqualityOperators) {
 						WriteEqualityOperators(writer, type);
 					}
-				}
-				else {
+				} else {
 					WriteCastComplexKeyMethods(writer, type);
 				}
 
@@ -263,7 +267,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 		}
 
 		var forExtensions = types
-		   .Where(x => x.Members.Count(y => y.IsKey) is 1)
+		   .Where(x => x.Members.Count(y => y.IsKey) is 1 && x.AddExtensionMethod)
 		   .ToArray();
 
 		if (forExtensions.Any()) {
@@ -272,7 +276,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 				foreach (var t in forExtensions) {
 					var key = t.Members.Single(x => x.IsKey);
 					writer.WriteLine(
-						$"{t.Symbol.DeclaredAccessibility.ToString().ToLower()} static {t.Symbol.QualifiedName()} As{t.Symbol.Name}(this {key.Type.QualifiedName()} key) => key;"
+						$"{t.Symbol.DeclaredAccessibility.ToString().ToLower()} static {t.Symbol.QualifiedName()} To{t.Symbol.Name}(this {key.Type.QualifiedName()} key) => new(key);"
 					);
 				}
 			}
