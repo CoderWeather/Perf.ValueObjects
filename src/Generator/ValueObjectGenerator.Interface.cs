@@ -32,7 +32,7 @@ public partial class ValueObjectGenerator {
 	}}
 	[ValueObject.Key]
 	public readonly {3} Value;
-	Guid IValueObject<{3}>.Key => Value;
+	{3} IValueObject<{3}>.Key => Value;
 	private readonly bool init;
 	
 	private bool InternalValidation() => init && Value != default;
@@ -78,7 +78,7 @@ public partial class ValueObjectGenerator {
 	}}
 	[ValueObject.Key]
 	public readonly {3} Value;
-	Guid IValueObject<{3}>.Key => Value;
+	{3} IValueObject<{3}>.Key => Value;
 	private readonly bool init;
 	
 	private bool InternalValidation() => init && IsValid(Value);
