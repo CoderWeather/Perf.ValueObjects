@@ -13,7 +13,7 @@
 
     <PropertyGroup>
         <PackageId>PerfValueObjects.Generator</PackageId>
-        <Version>1.0.9</Version>
+        <Version>1.0.10</Version>
         <Authors>Ilya Pogodin</Authors>
         <Description>Simple source generator for type per value unique id types</Description>
         <RepositoryUrl>https://github.com/CoderWeather/Perf.ValueObjects</RepositoryUrl>
@@ -23,15 +23,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="$(OutputPath)\$(AssemblyName).dll"
-              Pack="true"
-              PackagePath="analyzers/dotnet/cs"
-              Visible="false"/>
-        <None Include="../../LICENSE" Pack="true" PackagePath="" Visible="false"/>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="../../LICENSE" Pack="true" PackagePath="" Visible="false" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.2.0" PrivateAssets="all"/>
+        <Using Include="System.CodeDom.Compiler" />
+        <Using Include="System.Collections.Immutable" />
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.Runtime.CompilerServices" />
+        <Using Include="System.Text" />
+
+        <Using Include="Microsoft.CodeAnalysis" />
+        <Using Include="Microsoft.CodeAnalysis.CSharp" />
+        <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax" />
+        <Using Include="Microsoft.CodeAnalysis.Text" />
+
+        <Using Include="Perf.ValueObjects.Generator.Internal" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.2.0" PrivateAssets="all" />
     </ItemGroup>
 
 </Project>

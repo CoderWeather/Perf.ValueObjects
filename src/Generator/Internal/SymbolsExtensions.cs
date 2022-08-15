@@ -1,9 +1,17 @@
-﻿using Microsoft.CodeAnalysis;
-
-namespace Perf.ValueObjects.Generator.Internal;
+﻿namespace Perf.ValueObjects.Generator.Internal;
 
 internal static class SymbolsExtensions {
 	#region Types
+
+	public static string Accessibility(this ITypeSymbol type) =>
+		type.DeclaredAccessibility switch {
+			Microsoft.CodeAnalysis.Accessibility.Public               => "public",
+			Microsoft.CodeAnalysis.Accessibility.Internal             => "internal",
+			Microsoft.CodeAnalysis.Accessibility.Protected            => "protected",
+			Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal => "protected internal",
+			Microsoft.CodeAnalysis.Accessibility.Private              => "private",
+			_                                                         => throw new ArgumentOutOfRangeException(nameof(type.DeclaredAccessibility))
+		};
 
 	public static bool IsPrimitive(this ITypeSymbol type) =>
 		type.IsValueType
@@ -15,8 +23,7 @@ internal static class SymbolsExtensions {
 
 	public static bool IsList(this ITypeSymbol type) => type.Name is "List";
 
-	public static bool IsValueNullable(this ITypeSymbol type) =>
-		type is INamedTypeSymbol { Name: "Nullable", IsValueType: true };
+	public static bool IsValueNullable(this ITypeSymbol type) => type is INamedTypeSymbol { Name: "Nullable", IsValueType: true };
 
 	public static bool IsEnum(this ITypeSymbol type) => type.IsValueType && type.TypeKind is TypeKind.Enum;
 
@@ -48,39 +55,6 @@ internal static class SymbolsExtensions {
 		type is not null
 			? type.TryGetAttribute(attribute) ?? throw new($"{attribute} attribute not found for {type}")
 			: throw new ArgumentNullException(nameof(type));
-
-	#endregion
-
-	#region Ancestors
-
-	private static IEnumerable<INamedTypeSymbol> GetAllAncestorsEnumerable(this ITypeSymbol type) {
-		if (type.IsPrimitive()) {
-			yield break;
-		}
-
-		var baseType = type.BaseType;
-
-		while (baseType is not null && baseType.Name is not "object") {
-			yield return baseType;
-			baseType = baseType.BaseType;
-		}
-	}
-
-	private static readonly Dictionary<ITypeSymbol, IEnumerable<INamedTypeSymbol>> AncestorsCache =
-		new(SymbolEqualityComparer.Default);
-
-	public static IEnumerable<INamedTypeSymbol> GetAllAncestors(this ITypeSymbol type) {
-		if (AncestorsCache.TryGetValue(type, out var ancestors)) {
-			return ancestors;
-		}
-
-		AncestorsCache[type] = ancestors = type.GetAllAncestorsEnumerable().ToArray();
-
-		return ancestors;
-	}
-
-	public static INamedTypeSymbol? FindOldestAncestor(this ITypeSymbol type, Func<ITypeSymbol?, bool> predicate) =>
-		type.GetAllAncestors().LastOrDefault(predicate.Invoke);
 
 	#endregion
 }

@@ -1,6 +1,3 @@
-using System.CodeDom.Compiler;
-using Perf.ValueObjects.Generator.Internal;
-
 namespace Perf.ValueObjects.Generator;
 
 public sealed partial class ValueObjectGenerator {
@@ -54,7 +51,7 @@ public sealed partial class ValueObjectGenerator {
 				writer.WriteLine("if (vo.IsValid() is false)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						"throw ValueObjectValidationException.CreateFor(vo);"
+						"throw ValueObjectException.Validation(vo);"
 					);
 				}
 			}
@@ -62,7 +59,7 @@ public sealed partial class ValueObjectGenerator {
 				writer.WriteLine($"if (vo.{key.Symbol.Name} == default)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectException(\"Cannot cast '{type.Symbol.Name}' to '{key.Type.Name}' when '{type.Symbol.Name}.{key.Symbol.Name}' equals default\");"
+						$"throw new ValueObjectException<{type.Symbol.MinimalName()}>(\"Cannot cast '{type.Symbol.Name}' to '{key.Type.Name}' when '{type.Symbol.Name}.{key.Symbol.Name}' equals default\");"
 					);
 				}
 			}
@@ -78,7 +75,7 @@ public sealed partial class ValueObjectGenerator {
 				writer.WriteLine("if (vo.IsValid() is false)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						"throw ValueObjectValidationException.CreateFor(vo);"
+						"throw ValueObjectException.Validation(vo);"
 					);
 				}
 
@@ -89,7 +86,7 @@ public sealed partial class ValueObjectGenerator {
 				writer.WriteLine("if (key == default)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectException(\"Cannot cast '{key.Type.Name}' to '{type.Symbol.Name}' when '{key.Type.Name}' '{key.Symbol.Name}' key equals default\");"
+						$"throw new ValueObjectException<{type.Symbol.MinimalName()}>(\"Cannot cast '{key.Type.Name}' to '{type.Symbol.Name}' when '{key.Type.Name}' '{key.Symbol.Name}' key equals default\");"
 					);
 				}
 
@@ -102,10 +99,10 @@ public sealed partial class ValueObjectGenerator {
 	private static void WriteEqualityOperators(IndentedTextWriter writer, TypePack type) {
 		var key = type.Members.Single(x => x.IsKey);
 		writer.WriteLines(
-			$"public static bool operator ==({type.Symbol.QualifiedName()} left, {key.OriginalType.QualifiedName()} right) => left.{key.Symbol.Name} == right;",
-			$"public static bool operator !=({type.Symbol.QualifiedName()} left, {key.OriginalType.QualifiedName()} right) => left.{key.Symbol.Name} != right;",
-			$"public static bool operator ==({key.OriginalType.QualifiedName()} left, {type.Symbol.QualifiedName()} right) => left == right.{key.Symbol.Name};",
-			$"public static bool operator !=({key.OriginalType.QualifiedName()} left, {type.Symbol.QualifiedName()} right) => left != right.{key.Symbol.Name};"
+			$"public static bool operator ==({type.Symbol.MinimalName()} left, {key.OriginalType.MinimalName()} right) => left.{key.Symbol.Name} == right;",
+			$"public static bool operator !=({type.Symbol.MinimalName()} left, {key.OriginalType.MinimalName()} right) => left.{key.Symbol.Name} != right;",
+			$"public static bool operator ==({key.OriginalType.MinimalName()} left, {type.Symbol.MinimalName()} right) => left == right.{key.Symbol.Name};",
+			$"public static bool operator !=({key.OriginalType.MinimalName()} left, {type.Symbol.MinimalName()} right) => left != right.{key.Symbol.Name};"
 		);
 	}
 
@@ -120,7 +117,7 @@ public sealed partial class ValueObjectGenerator {
 				writer.WriteLine("if (vo.IsValid() is false)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						"throw ValueObjectValidationException.CreateFor(vo);"
+						"throw ValueObjectException.Validation(vo);"
 					);
 				}
 			}
@@ -130,7 +127,7 @@ public sealed partial class ValueObjectGenerator {
 				);
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectException(\"Cannot cast '{type.Symbol.Name}' to '{castToType}' when any of key members equals default\");"
+						$"throw new ValueObjectException<{type.Symbol.MinimalName()}>(\"Cannot cast '{type.Symbol.Name}' to '{castToType}' when any of key members equals default\");"
 					);
 				}
 			}
@@ -152,7 +149,7 @@ public sealed partial class ValueObjectGenerator {
 				writer.WriteLine("if (vo.IsValid() is false)");
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						"throw ValueObjectValidationException.CreateFor(vo);"
+						"throw ValueObjectException.Validation(vo);"
 					);
 				}
 
@@ -164,7 +161,7 @@ public sealed partial class ValueObjectGenerator {
 				);
 				using (NestedScope.Start(writer)) {
 					writer.WriteLine(
-						$"throw new ValueObjectException(\"Cannot cast '{castToType}' to '{type.Symbol.Name}' when any of tuple elements equals default\");"
+						$"throw new ValueObjectException<{type.Symbol.MinimalName()}>(\"Cannot cast '{castToType}' to '{type.Symbol.Name}' when any of tuple elements equals default\");"
 					);
 				}
 

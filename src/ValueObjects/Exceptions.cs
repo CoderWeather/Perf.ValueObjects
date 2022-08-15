@@ -1,10 +1,11 @@
 ﻿namespace Perf.ValueObjects;
 
-public sealed class ValueObjectException : Exception {
-	public ValueObjectException(string message) : base(message) { }
+public abstract class ValueObjectException<TValueObject> : Exception {
+	protected ValueObjectException(string message) : base(message) { }
+	protected ValueObjectException(string message, Exception innerException) : base(message, innerException) { }
 }
 
-public sealed class ValueObjectValidationException<TValueObject> : Exception {
+public sealed class ValueObjectValidationException<TValueObject> : ValueObjectException<TValueObject> {
 	public TValueObject Value { get; }
 
 	public ValueObjectValidationException(TValueObject value) : base(
@@ -14,6 +15,13 @@ public sealed class ValueObjectValidationException<TValueObject> : Exception {
 	}
 }
 
-public static class ValueObjectValidationException {
-	public static ValueObjectValidationException<T> CreateFor<T>(T value) => new(value);
+public sealed class ValueObjectInitializationException<TValueObject> : ValueObjectException<TValueObject> {
+	public ValueObjectInitializationException() : base(
+		$"{typeof(TValueObject).Name} is not initialized"
+	) { }
+}
+
+public static class ValueObjectException {
+	public static ValueObjectValidationException<T> Validation<T>(T value) => new(value);
+	public static ValueObjectInitializationException<T> Initialization<T>() => new();
 }

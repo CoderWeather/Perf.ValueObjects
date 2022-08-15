@@ -1,7 +1,4 @@
-using System.CodeDom.Compiler;
-using Microsoft.CodeAnalysis;
-
-namespace Perf.ValueObjects.Generator;
+namespace Perf.ValueObjects.Generator.Internal;
 
 internal sealed class NestedScope : IDisposable {
 	private NestedScope(IndentedTextWriter writer) {
@@ -92,13 +89,12 @@ internal sealed class NestedClassScope : IDisposable {
 		// {public/private...} {ref} partial {class/struct} {name}
 		var visibilityModifier = type.DeclaredAccessibility.ToString().ToLowerInvariant();
 		var refModifier = type.IsRefLikeType ? " ref" : null;
-		var fullName = type.ToString()!;
 		const string format = "{0}{1} partial {2} {3}";
 		var str = string.Format(format,
 			visibilityModifier,
 			refModifier,
 			TypeKindToStr(type),
-			fullName.Substring(fullName.LastIndexOf('.') + 1)
+			type.MinimalName()
 		);
 		return str;
 	}
