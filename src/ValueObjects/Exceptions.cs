@@ -1,8 +1,8 @@
 ﻿namespace Perf.ValueObjects;
 
 public class ValueObjectException<TValueObject> : Exception {
-	protected ValueObjectException(string message) : base(message) { }
-	protected ValueObjectException(string message, Exception innerException) : base(message, innerException) { }
+	public ValueObjectException(string message) : base(message) { }
+	public ValueObjectException(string message, Exception innerException) : base(message, innerException) { }
 }
 
 public sealed class ValueObjectValidationException<TValueObject> : ValueObjectException<TValueObject> {
