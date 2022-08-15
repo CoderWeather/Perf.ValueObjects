@@ -1,10 +1,10 @@
 namespace Perf.ValueObjects;
 
-public interface IValueObject<in TKey> {
-	Guid Key { get; }
+public interface IValueObject<out TKey> {
+	TKey Key { get; }
 }
 
-public interface IValidatableValueObject<in T> : IValueObject<T> {
+public interface IValidatableValueObject<T> : IValueObject<T> {
 	bool IsValid(T value);
 }
 
