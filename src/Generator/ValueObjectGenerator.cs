@@ -218,8 +218,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 				WriteBodyFromInterfaceDefinition(writer, type);
 			} else if (type.MarkedWithValidatableInterface) {
 				WriteBodyFromValidatableInterfaceDefinition(writer, type);
-			}
-			else {
+			} else {
 				using (NestedClassScope.Start(writer, type.Symbol)) {
 					if (type.Members.Count(x => x.IsKey) is 1) {
 						WriteCastSingleKeyMethods(writer, type);

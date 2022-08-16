@@ -28,17 +28,15 @@ public partial class ValueObjectGenerator {
 	public {2}({3} value) {{
 		Value = value;
 		init = true;
-		if (InternalValidation() is false) throw ValueObjectException.Validation(this);
+		if (init is false || Value == default) throw ValueObjectException.Validation(this);
 	}}
 	[ValueObject.Key]
 	public readonly {3} Value;
 	{3} IValueObject<{3}>.Key => Value;
 	private readonly bool init;
 	
-	private bool InternalValidation() => init && Value != default;
-	
 	public static implicit operator {3}({2} vo) {{
-		if (vo.InternalValidation() is false) throw ValueObjectException.Validation(vo);
+		if (vo.init is false || vo.Value == default) throw ValueObjectException.Validation(vo);
 		return vo.Value;
 	}}
 	
@@ -74,17 +72,15 @@ public partial class ValueObjectGenerator {
 	public {2}({3} value) {{
 		Value = value;
 		init = true;
-		if (InternalValidation() is false) throw ValueObjectException.Validation(this);
+		if (init is false || IsValid() is false) throw ValueObjectException.Validation(this);
 	}}
 	[ValueObject.Key]
 	public readonly {3} Value;
 	{3} IValueObject<{3}>.Key => Value;
 	private readonly bool init;
 	
-	private bool InternalValidation() => init && IsValid(Value);
-	
 	public static implicit operator {3}({2} vo) {{
-		if (vo.InternalValidation() is false) throw ValueObjectException.Validation(vo);
+		if (vo.init is false || vo.IsValid() is false) throw ValueObjectException.Validation(vo);
 		return vo.Value;
 	}}
 	
