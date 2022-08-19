@@ -21,7 +21,14 @@ public sealed class ValueObjectInitializationException<TValueObject> : ValueObje
 	) { }
 }
 
+public sealed class ValueObjectEmptyException<TValueObject> : ValueObjectException<TValueObject> {
+	public ValueObjectEmptyException() : base(
+		$"{typeof(TValueObject).Name} is empty and value cannot be accessed"
+	) { }
+}
+
 public static class ValueObjectException {
 	public static ValueObjectValidationException<T> Validation<T>(T value) => new(value);
 	public static ValueObjectInitializationException<T> Initialization<T>() => new();
+	public static ValueObjectEmptyException<T> Empty<T>() => new();
 }

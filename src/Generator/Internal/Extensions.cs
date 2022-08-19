@@ -30,4 +30,14 @@ internal static class Extensions {
 				: null;
 		return $"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}{nullablePostfix}";
 	}
+
+	public static INamedTypeSymbol? TryGetInterface(this INamedTypeSymbol nts, INamedTypeSymbol i) {
+		foreach (var t in nts.Interfaces) {
+			if (t.OriginalDefinition.Equals(i, SymbolEqualityComparer.Default)) {
+				return t;
+			}
+		}
+
+		return null;
+	}
 }

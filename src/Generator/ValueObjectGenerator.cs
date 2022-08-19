@@ -21,8 +21,8 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 			var haveVoInterfaceMarker = rec.BaseList?.Types
 			   .Any(x => x.Type is GenericNameSyntax { Identifier.Text: "IValueObject" or "IValidatableValueObject" }) is true;
 			var recordStructDeclaration = rec.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword);
-			var havePartialKeyword = rec.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword));
-			var haveAbstractKeyword = rec.Modifiers.Any(x => x.IsKind(SyntaxKind.AbstractKeyword));
+			var havePartialKeyword = rec.Modifiers.Any(SyntaxKind.PartialKeyword);
+			var haveAbstractKeyword = rec.Modifiers.Any(SyntaxKind.AbstractKeyword);
 
 			return (haveAttribute || haveVoInterfaceMarker)
 			 && recordStructDeclaration
@@ -59,13 +59,14 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 		}
 
 		TypePack pack;
-		if (symbol.Interfaces.Any(x => x.OriginalDefinition.Equals(voInterfaceType, SymbolEqualityComparer.Default))) {
+		if (symbol.TryGetInterface(voValidatableInterfaceType) is { } i2) {
 			pack = new(symbol) {
-				MarkedWithInterface = true
-			};
-		} else if (symbol.Interfaces.Any(x => x.OriginalDefinition.Equals(voValidatableInterfaceType, SymbolEqualityComparer.Default))) {
-			pack = new(symbol) {
+				InterfaceMarker = i2,
 				MarkedWithValidatableInterface = true
+			};
+		} else if (symbol.TryGetInterface(voInterfaceType) is { } i) {
+			pack = new(symbol) {
+				InterfaceMarker = i
 			};
 		} else if (symbol.TryGetAttribute(valueObjectAttributeType) is { } attributeData) {
 			pack = new(symbol) {
@@ -80,7 +81,7 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 			return null;
 		}
 
-		if (pack.MarkedWithInterface is false && pack.MarkedWithValidatableInterface is false) {
+		if (pack.InterfaceMarker is null && pack.MarkedWithValidatableInterface is false) {
 			var fields = symbol.GetMembers()
 			   .OfType<IFieldSymbol>()
 			   .Where(f => f is {
@@ -214,10 +215,8 @@ public sealed partial class ValueObjectGenerator : IIncrementalGenerator {
 		writer.WriteLine($"namespace {containingNamespace};");
 
 		foreach (var type in types) {
-			if (type.MarkedWithInterface) {
+			if (type.InterfaceMarker is not null) {
 				WriteBodyFromInterfaceDefinition(writer, type);
-			} else if (type.MarkedWithValidatableInterface) {
-				WriteBodyFromValidatableInterfaceDefinition(writer, type);
 			} else {
 				using (NestedClassScope.Start(writer, type.Symbol)) {
 					if (type.Members.Count(x => x.IsKey) is 1) {

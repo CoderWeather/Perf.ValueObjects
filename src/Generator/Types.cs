@@ -7,7 +7,7 @@ internal sealed class TypePack {
 	public bool ImplementsValidatable { get; set; }
 	public bool AddEqualityOperators { get; set; }
 	public bool AddExtensionMethod { get; set; }
-	public bool MarkedWithInterface { get; set; }
+	public INamedTypeSymbol? InterfaceMarker { get; set; }
 	public bool MarkedWithValidatableInterface { get; set; }
 
 	public TypePack(INamedTypeSymbol type) {
